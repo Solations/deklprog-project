@@ -1,7 +1,7 @@
 module Vars
-  ( -- testVars,
- -- Vars (allVars),
- -- freshVars,
+  ( testVars,
+    Vars (allVars),
+    freshVars,
   )
 where
 
@@ -40,7 +40,7 @@ noDuplicates (x:xs) =   if (elem x xs)
                         then noDuplicates xs 
                         else [x] ++ noDuplicates xs
 
-{- Uncomment this to test the properties when all required functions are implemented
+-- Tests
 
 spec :: Int -> Property
 spec n = (n >= 0) && (n <= 100) ==> freshVars !! (n * 26)  == VarName ("A" ++ str)
@@ -49,4 +49,3 @@ spec n = (n >= 0) && (n <= 100) ==> freshVars !! (n * 26)  == VarName ("A" ++ st
 -- Run tests
 testVars :: IO ()
 testVars = quickCheck spec
--}
