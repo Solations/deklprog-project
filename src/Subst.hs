@@ -31,16 +31,17 @@ instance Arbitrary Subst where
   arbitrary = Subst <$> (arbitrary `suchThat` ((\vts -> length vts == length (nub vts)) . map fst))
 
 {-- Pretty printing of substitutions
+class Pretty hasn't been implemented yet!
 instance Pretty Subst where
   pretty (Subst vts) = '{' : intercalate ", " (map prettyVt vts) ++ "}"
     where
-      prettyVt (x, t) = unwords [pretty (Var x), "->", pretty t]
+      prettyVt (x, t) = unwords [pretty (Var x), "->", pretty t]-}
 
 -- All variables occuring in substitutions
 instance Vars Subst where
   allVars (Subst vts) = nub (vs ++ concatMap allVars ts)
     where
-      (vs, ts) = unzip vts-}
+      (vs, ts) = unzip vts
 
 -- Restrict a substitution to a given set of variables
 restrictTo :: Subst -> [VarName] -> Subst
@@ -56,6 +57,8 @@ empty :: Subst
 empty = Subst []
 
 single :: VarName -> Term -> Subst
+single var (Var varFromTerm)  | var == varFromTerm = empty
+                              | otherwise = Subst [(var, (Var varFromTerm))]
 single var term = Subst [(var, term)]
 
 isEmpty :: Subst -> Bool
@@ -69,9 +72,22 @@ apply (Subst ((varSubst, term):substitutions)) (Var var) = if var == varSubst
                                                             else apply (Subst substitutions) (Var var)
 apply (Subst substitutions) (Comb combName terms) = Comb combName (map (\term -> apply (Subst substitutions) term) terms)
 
--- Properties
+compose :: Subst -> Subst -> Subst
+compose outerSubst (Subst []) = outerSubst
+compose (Subst []) innerSubst = innerSubst
+compose (Subst outerSubstitutions) (Subst innerSubstitutions) =
+  Subst (applyOuterSubstToInnerSubstitutions ++ outerSubstitutionsWithoutDomainOfInnerSubst)
+  where
+    applyOuterSubstToInnerSubstitutions = foldl 
+      (\substs (var, term) -> if (apply (Subst outerSubstitutions) term) == (Var var)
+                              then substs
+                              else substs ++ [(var, apply (Subst outerSubstitutions) term)])
+      [] innerSubstitutions
+    outerSubstitutionsWithoutDomainOfInnerSubst = filter
+      (\(var, term) -> not (elem var (domain (Subst innerSubstitutions))))
+      outerSubstitutions
 
-{- Uncomment this to test the properties when all required functions are implemented
+-- Properties
 
 -- Applying the empty substitution to a term should not change the term
 prop_1 :: Term -> Bool
@@ -159,6 +175,4 @@ return []
 -- Run all tests
 testSubst :: IO Bool
 testSubst = $(quickCheckAll)
-
--}
 
