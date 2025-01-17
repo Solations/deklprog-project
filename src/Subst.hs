@@ -16,6 +16,8 @@ where
 
 import Base.Type
 import Data.List (intercalate, nub, sort)
+import Vars
+import Pretty
 import Test.QuickCheck
 
 -- Data type for substitutions
@@ -28,7 +30,7 @@ instance Arbitrary Subst where
   -- i.e. whose domain contains the same variable more than once.
   arbitrary = Subst <$> (arbitrary `suchThat` ((\vts -> length vts == length (nub vts)) . map fst))
 
--- Pretty printing of substitutions
+{-- Pretty printing of substitutions
 instance Pretty Subst where
   pretty (Subst vts) = '{' : intercalate ", " (map prettyVt vts) ++ "}"
     where
@@ -38,11 +40,17 @@ instance Pretty Subst where
 instance Vars Subst where
   allVars (Subst vts) = nub (vs ++ concatMap allVars ts)
     where
-      (vs, ts) = unzip vts
+      (vs, ts) = unzip vts-}
 
 -- Restrict a substitution to a given set of variables
 restrictTo :: Subst -> [VarName] -> Subst
 restrictTo (Subst vts) vs = Subst [(x, t) | (x, t) <- vts, x `elem` vs]
+
+domain :: Subst -> [VarName]
+domain (Subst substitutions) = foldl addOneVarToList [] substitutions
+  where
+    addOneVarToList vars (var, (Var var2)) = if var == var2 then vars else vars ++ [var]
+    addOneVarToList vars (var, term) = vars ++ [var]
 
 -- Properties
 
