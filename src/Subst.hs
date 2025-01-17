@@ -55,12 +55,19 @@ domain (Subst substitutions) = foldl addOneVarToList [] substitutions
 empty :: Subst
 empty = Subst []
 
-single :: VarName -> Term -> Term
+single :: VarName -> Term -> Subst
 single var term = Subst [(var, term)]
 
 isEmpty :: Subst -> Bool
 isEmpty (Subst []) = True
 isEmpty _ = False
+
+apply :: Subst -> Term -> Term
+apply (Subst []) term = term
+apply (Subst ((varSubst, term):substitutions)) (Var var) = if var == varSubst 
+                                                            then term 
+                                                            else apply (Subst substitutions) (Var var)
+apply (Subst substitutions) (Comb combName terms) = Comb combName (map (\term -> apply (Subst substitutions) term) terms)
 
 -- Properties
 
