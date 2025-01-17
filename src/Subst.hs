@@ -52,6 +52,16 @@ domain (Subst substitutions) = foldl addOneVarToList [] substitutions
     addOneVarToList vars (var, (Var var2)) = if var == var2 then vars else vars ++ [var]
     addOneVarToList vars (var, term) = vars ++ [var]
 
+empty :: Subst
+empty = Subst []
+
+single :: VarName -> Term -> Term
+single var term = Subst [(var, term)]
+
+isEmpty :: Subst -> Bool
+isEmpty (Subst []) = True
+isEmpty _ = False
+
 -- Properties
 
 {- Uncomment this to test the properties when all required functions are implemented
